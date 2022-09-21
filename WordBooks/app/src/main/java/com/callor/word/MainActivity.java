@@ -1,6 +1,7 @@
 package com.callor.word;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -8,6 +9,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.callor.word.model.WordVO;
+import com.callor.word.model.WordViewModel;
 
 /*
 Activity
@@ -19,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
     private int imageWidth = 0;
     private int imageHeight = 0;
 
+    private WordViewModel viewModel ;
+
     /*
     안드로이드 앱이 실행될때 화면을 만들어주는 Method
      */
@@ -27,9 +34,30 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        /*
+        lifeCycle.ViewModelProvider 를 사용하여
+        WordViewModel 클래스를 객체로 생성하여 viewModel 에 세팅하기
+         */
+        viewModel = new ViewModelProvider.AndroidViewModelFactory(
+                MainActivity.this.getApplication()).create(
+                        WordViewModel.class
+        );
+
+        /*
+        ViewModel 활용하여 tbl_words 데이터베이스로 부터 SELECT All 수행하라
+         */
+        viewModel.selectAll().observe(this,
+                wordList -> {
+                for(WordVO word : wordList) {
+                    Log.d("MAIN", word.getWord());
+                }
+        });
+
+
         // activity_main.xml 에 설정된 btn_size 위젯을 사용하기 위한
         // 객체로 설정
         Button btn_size = findViewById(R.id.btn_size);
+
 
         // btb_size Button 을 클릭 또는 Touch 했을때
         // 할일을 지정하기(이벤트 핸들러 설정)
@@ -42,6 +70,11 @@ public class MainActivity extends AppCompatActivity {
                         "Button Click",
                         Toast.LENGTH_SHORT).show();
 
+                String word = String.format("Korea %d",
+                        (int)(Math.random() * 100));
+
+                WordVO wordVO = new WordVO(0,word);
+                viewModel.insert(wordVO);
 
                 // ImageView 객체 선언
                 ImageView imageView = findViewById(R.id.image);
